@@ -17,15 +17,17 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.listbox.MultiSelectListBox;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.textfield.Autocapitalize;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.BinderValidationStatus;
-import com.vaadin.flow.data.binder.BindingValidationStatus;
 import com.vaadin.flow.data.binder.StatusChangeEvent;
-import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.BeforeLeaveEvent;
+import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
+import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -40,7 +42,7 @@ import de.kreth.clubhelper.personedit.remote.Business;
 @Route("edit")
 @PageTitle("Personeneditor")
 public class PersonEditor extends Div
-	implements HasUrlParameter<Integer> {
+	implements HasUrlParameter<Integer>, BeforeLeaveObserver {
 
     private static final long serialVersionUID = 1L;
 
@@ -55,12 +57,15 @@ public class PersonEditor extends Div
 
     private MultiSelectListBox<GroupDef> groupComponent;
 
-    private Button ok;
+    private Button store;
+
     private Button reset;
 
     private Text status;
 
     private DetailedPerson personDetails;
+
+    private Text groupError;
 
     public PersonEditor(@Autowired Business restService) {
 	this.restService = restService;
@@ -80,10 +85,13 @@ public class PersonEditor extends Div
 		.bind(DetailedPerson::getSurname, DetailedPerson::setSurname);
 	binder.forField(birthday).withValidator(validator::validateBirthday)
 		.bind(DetailedPerson::getBirth, DetailedPerson::setBirth);
-	binder.forField(gender).bind(DetailedPerson::getGenderObject, DetailedPerson::setGender);
+
+	binder.forField(gender).bind(DetailedPerson::getGenderObject,
+		DetailedPerson::setGender);
 	binder.forField(startPass).withValidator(validator::validateStartpass)
 		.bind(this::getStartPassNr, this::setStartpassNr);
 	binder.forField(groupComponent).withValidator(validator::validateGroup)
+//		.withStatusLabel(groupError)
 		.bind(this::getGroups, this::setGroups);
 
 	binder.setStatusLabel(status);
@@ -93,11 +101,14 @@ public class PersonEditor extends Div
 
     void binderStatusChange(StatusChangeEvent event) {
 	if (event.hasValidationErrors()) {
-	    ok.setEnabled(false);
-	    ok.getElement().setAttribute("title", "Es gibt Fehler, Speichern nicht möglich.");
+	    store.setEnabled(false);
+	    status.setText("Es gibt Fehler, Speichern nicht möglich.");
+	} else if (binder.hasChanges()) {
+	    store.setEnabled(true);
+	    status.setText("Speichern der Eingaben.");
 	} else {
-	    ok.setEnabled(true);
-	    ok.getElement().setAttribute("title", "Speichern der Eingaben.");
+	    store.setEnabled(false);
+	    status.setText("");
 	}
     }
 
@@ -106,6 +117,8 @@ public class PersonEditor extends Div
 	prename = new TextField();
 	surname = new TextField();
 	startPass = new TextField();
+	startPass.setAutocapitalize(Autocapitalize.CHARACTERS);
+	startPass.setValueChangeMode(ValueChangeMode.EAGER);
 
 	birthday = new DatePicker() {
 
@@ -130,8 +143,12 @@ public class PersonEditor extends Div
 	};
 	groupComponent.setRenderer(itemRenderer);
 	groupComponent.setDataProvider(DataProvider.ofCollection(groups));
+	groupError = new Text("");
+	groupComponent.add(groupError);
+	groupError.setText("Hier werden Fehler in Gruppen angezeigt.");
 
-	ok = new Button("OK", this::onOkClick);
+	store = new Button("Speichern", this::onStoreClick);
+	store.setEnabled(false); // Keine Änderungen --> disabled.
 	reset = new Button("Zurücksetzen", this::onResetClick);
 
 	layoutWithFormItems.addFormItem(prename, "Vorname");
@@ -143,25 +160,17 @@ public class PersonEditor extends Div
 
 	status = new Text("");
 
-	add(layoutWithFormItems, new HorizontalLayout(ok, reset), status);
+	add(layoutWithFormItems, new HorizontalLayout(store, reset), status);
     }
 
     public void onResetClick(ClickEvent<Button> event) {
 	binder.readBean(personDetails);
     }
 
-    public void onOkClick(ClickEvent<Button> event) {
-	if (binder.writeBeanIfValid(personDetails)) {
+    public void onStoreClick(ClickEvent<Button> event) {
 
-	    if (binder.hasChanges()) {
-		restService.store(binder.getBean());
-	    }
-	} else {
-	    BinderValidationStatus<DetailedPerson> validate = binder.validate();
-	    List<BindingValidationStatus<?>> fieldValidationErrors = validate.getFieldValidationErrors();
-	    List<ValidationResult> beanValidationErrors = validate.getBeanValidationErrors();
-	    System.out.println(fieldValidationErrors);
-	    System.out.println(beanValidationErrors);
+	if (binder.hasChanges() && binder.writeBeanIfValid(personDetails)) {
+	    restService.store(binder.getBean());
 	}
     }
 
@@ -203,6 +212,27 @@ public class PersonEditor extends Div
 	    groupComponent.getDataProvider().refreshAll();
 	    personDetails = restService.getPersonDetails(personId);
 	    binder.readBean(personDetails);
+	}
+
+    }
+
+    @Override
+    public void beforeLeave(BeforeLeaveEvent event) {
+
+	if (binder.hasChanges()) {
+	    final ContinueNavigationAction postpone = event.postpone();
+	    new ConfirmDialog()
+		    .withTitle("Änderungen werden verworfen!")
+		    .withMessage(
+			    "Es gibt ungespeicherte Änderungen. Wenn Sie fortfahren, werden diese verloren gehen.")
+		    .withConfirmButton("Speichern", ev -> {
+			onStoreClick(null);
+			postpone.proceed();
+		    })
+		    .withCancelButton("Abbrechen", ev -> {
+		    })
+		    .withRejectButton("Änderungen verwerfen", ev -> postpone.proceed())
+		    .open();
 	}
 
     }
