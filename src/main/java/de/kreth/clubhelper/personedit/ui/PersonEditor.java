@@ -15,6 +15,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.listbox.MultiSelectListBox;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.Autocapitalize;
@@ -32,17 +33,17 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
+import de.kreth.clubhelper.data.Gender;
+import de.kreth.clubhelper.data.GroupDef;
+import de.kreth.clubhelper.data.Startpass;
 import de.kreth.clubhelper.personedit.data.DetailedPerson;
-import de.kreth.clubhelper.personedit.data.Gender;
-import de.kreth.clubhelper.personedit.data.GroupDef;
 import de.kreth.clubhelper.personedit.data.PersonValidator;
-import de.kreth.clubhelper.personedit.data.Startpass;
 import de.kreth.clubhelper.personedit.remote.Business;
 
 @Route("edit")
 @PageTitle("Personeneditor")
 public class PersonEditor extends Div
-	implements HasUrlParameter<Integer>, BeforeLeaveObserver {
+	implements HasUrlParameter<Long>, BeforeLeaveObserver {
 
     private static final long serialVersionUID = 1L;
 
@@ -119,9 +120,10 @@ public class PersonEditor extends Div
 	startPass = new TextField();
 	startPass.setAutocapitalize(Autocapitalize.CHARACTERS);
 	startPass.setValueChangeMode(ValueChangeMode.EAGER);
+	startPass.setEnabled(false);
+	Button startpassButton = new Button(VaadinIcon.PENCIL.create(), ev -> openStartpassEditor());
 
 	birthday = new DatePicker() {
-
 	    private static final long serialVersionUID = 4447836207485665873L;
 
 	    @Override
@@ -156,11 +158,19 @@ public class PersonEditor extends Div
 	layoutWithFormItems.addFormItem(birthday, "Geburtstag");
 	layoutWithFormItems.addFormItem(gender, "Geschlecht");
 	layoutWithFormItems.addFormItem(groupComponent, "Gruppen");
-	layoutWithFormItems.addFormItem(startPass, "Startpassnummer");
+	layoutWithFormItems.addFormItem(new HorizontalLayout(startPass, startpassButton), "Startpassnummer");
 
 	status = new Text("");
 
 	add(layoutWithFormItems, new HorizontalLayout(store, reset), status);
+    }
+
+    private void openStartpassEditor() {
+	if (personDetails.getStartpass() != null) {
+	    personDetails.setStartpass(new Startpass());
+	}
+	StartpassEditor startpassEditor = new StartpassEditor(personDetails.getStartpass());
+	startpassEditor.open();
     }
 
     public void onResetClick(ClickEvent<Button> event) {
@@ -206,7 +216,7 @@ public class PersonEditor extends Div
     }
 
     @Override
-    public void setParameter(BeforeEvent event, Integer personId) {
+    public void setParameter(BeforeEvent event, Long personId) {
 	if (personId != null) {
 	    this.groups.addAll(restService.getAllGroups());
 	    groupComponent.getDataProvider().refreshAll();

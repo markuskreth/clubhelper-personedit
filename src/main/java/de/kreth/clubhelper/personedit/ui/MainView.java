@@ -24,7 +24,7 @@ import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
-import de.kreth.clubhelper.personedit.data.Person;
+import de.kreth.clubhelper.data.Person;
 import de.kreth.clubhelper.personedit.remote.Business;
 
 @Route
@@ -88,7 +88,7 @@ public class MainView extends VerticalLayout {
     }
 
     void personClicked(ItemClickEvent<Person> event) {
-	int personId = event.getItem().getId();
+	Long personId = event.getItem().getId();
 	event.getSource().getUI()
 		.ifPresent(ui -> ui.navigate(PersonEditor.class, personId));
     }

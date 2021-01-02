@@ -7,9 +7,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import de.kreth.clubhelper.data.Contact;
+import de.kreth.clubhelper.data.Gender;
+import de.kreth.clubhelper.data.GroupDef;
+import de.kreth.clubhelper.data.Person;
+import de.kreth.clubhelper.data.Startpass;
+
 public class DetailedPerson {
 
-    private int id;
+    private long id;
     private LocalDate birth;
     private String prename;
     private String surname;
@@ -23,7 +29,7 @@ public class DetailedPerson {
     private DetailedPerson() {
     }
 
-    public int getId() {
+    public long getId() {
 	return id;
     }
 
@@ -108,4 +114,14 @@ public class DetailedPerson {
 	return person;
     }
 
+    public Person toPerson() {
+	Person p = new Person();
+	p.setId(id);
+	p.setBirth(birth);
+	p.setPrename(prename);
+	p.setSurname(surname);
+	p.setGender(Gender.valueOf(gender));
+
+	return p;
+    }
 }

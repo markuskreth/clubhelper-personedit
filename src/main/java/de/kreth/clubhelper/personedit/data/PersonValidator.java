@@ -6,6 +6,8 @@ import java.util.Collection;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.ValueContext;
 
+import de.kreth.clubhelper.data.GroupDef;
+
 /**
  * Validator for fields of {@link DetailedPerson}
  * 

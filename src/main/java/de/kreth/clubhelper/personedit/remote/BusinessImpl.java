@@ -13,22 +13,29 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import de.kreth.clubhelper.personedit.data.Contact;
+import de.kreth.clubhelper.data.Contact;
+import de.kreth.clubhelper.data.GroupDef;
+import de.kreth.clubhelper.data.Person;
+import de.kreth.clubhelper.data.Startpass;
 import de.kreth.clubhelper.personedit.data.DetailedPerson;
-import de.kreth.clubhelper.personedit.data.GroupDef;
-import de.kreth.clubhelper.personedit.data.Person;
-import de.kreth.clubhelper.personedit.data.Startpass;
 
 @Service
 public class BusinessImpl implements Business {
 
-    @Autowired
-    private RestTemplate webClient;
+    private final RestTemplate webClient;
 
     @Value("${resourceserver.api.url}")
     private String apiUrl;
 
-    private final Map<Integer, Person> cache = new HashMap<>();
+    private final Map<Long, Person> cache = new HashMap<>();
+
+    public BusinessImpl(@Autowired RestTemplate webClient) {
+	this.webClient = webClient;
+    }
+
+    public void setApiUrl(String apiUrl) {
+	this.apiUrl = apiUrl;
+    }
 
     @Override
     public List<Person> getPersons() {
@@ -46,7 +53,7 @@ public class BusinessImpl implements Business {
     }
 
     @Override
-    public DetailedPerson getPersonDetails(Integer personId) {
+    public DetailedPerson getPersonDetails(Long personId) {
 	Person p;
 	if (cache.containsKey(personId)) {
 	    p = cache.get(personId);
@@ -76,8 +83,46 @@ public class BusinessImpl implements Business {
     }
 
     @Override
-    public void store(DetailedPerson bean) {
+    public DetailedPerson store(DetailedPerson bean) {
 
+	DetailedPerson result = innerStore(bean);
+
+	List<Contact> contacts = bean.getContacts();
+	for (int index = 0; index < contacts.size(); index++) {
+	    Contact contact = contacts.get(index);
+	    Contact c = store(bean, contact);
+	    result.getContacts().add(c);
+	}
+	return result;
+    }
+
+    private DetailedPerson innerStore(DetailedPerson bean) {
+	String url;
+	DetailedPerson result;
+	if (bean.getId() < 0) {
+	    Person p = bean.toPerson();
+	    url = apiUrl + "/person";
+	    result = DetailedPerson.createFor(webClient.postForObject(url, p, Person.class));
+	} else {
+	    url = apiUrl + "/person/" + bean.getId();
+	    webClient.put(url, bean);
+	    result = DetailedPerson.createFor(bean.toPerson());
+	}
+	return result;
+    }
+
+    private Contact store(DetailedPerson bean, Contact contact) {
+	String url;
+	Contact result;
+	if (contact.getId() < 0) {
+	    url = apiUrl + "/contact";
+	    result = webClient.postForObject(url, contact, Contact.class);
+	} else {
+	    url = apiUrl + "/contact/for/" + bean.getId();
+	    webClient.put(url, contact);
+	    result = contact;
+	}
+	return result;
     }
 
 }

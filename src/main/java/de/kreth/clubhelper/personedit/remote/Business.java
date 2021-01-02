@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.springframework.security.core.Authentication;
 
+import de.kreth.clubhelper.data.GroupDef;
+import de.kreth.clubhelper.data.Person;
 import de.kreth.clubhelper.personedit.data.DetailedPerson;
-import de.kreth.clubhelper.personedit.data.GroupDef;
-import de.kreth.clubhelper.personedit.data.Person;
 
 public interface Business {
 
@@ -16,8 +16,8 @@ public interface Business {
 
     List<GroupDef> getAllGroups();
 
-    DetailedPerson getPersonDetails(Integer personId);
+    DetailedPerson getPersonDetails(Long personId);
 
-    void store(DetailedPerson bean);
+    DetailedPerson store(DetailedPerson bean);
 
 }

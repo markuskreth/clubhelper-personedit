@@ -8,7 +8,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
-import de.kreth.clubhelper.personedit.data.Gender;
+import de.kreth.clubhelper.data.Gender;
 
 @JsonComponent
 public class GenderSerializer extends JsonSerializer<Gender> {
