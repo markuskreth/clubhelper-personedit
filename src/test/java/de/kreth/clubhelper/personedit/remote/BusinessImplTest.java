@@ -101,7 +101,7 @@ public class BusinessImplTest {
 
 	business.store(detail);
 
-	verify(restMock).put(eq(apiUrl + "/contact/1"), eq(newContact));
+	verify(restMock).put(eq(apiUrl + "/contact/for/1"), eq(newContact));
 
     }
 

@@ -124,4 +124,10 @@ public class DetailedPerson {
 
 	return p;
     }
+
+    @Override
+    public String toString() {
+	return "DetailedPerson [id=" + id + ", prename=" + prename + ", surname=" + surname + "]";
+    }
+
 }
