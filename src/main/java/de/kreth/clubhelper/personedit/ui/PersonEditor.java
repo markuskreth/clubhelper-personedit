@@ -133,6 +133,7 @@ public class PersonEditor extends Div
 	};
 	gender = new ComboBox<>();
 	gender.setItems(Gender.values());
+	gender.setRenderer(new GenderRenderer());
 	groupComponent = new MultiSelectListBox<>();
 	ComponentRenderer<? extends Component, GroupDef> itemRenderer = new ComponentRenderer<>() {
 	    private static final long serialVersionUID = 1L;
