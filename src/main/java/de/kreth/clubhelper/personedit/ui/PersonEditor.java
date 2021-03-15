@@ -24,6 +24,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.StatusChangeEvent;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.BeforeLeaveEvent;
@@ -133,7 +134,10 @@ public class PersonEditor extends Div
 	};
 	gender = new ComboBox<>();
 	gender.setItems(Gender.values());
-	gender.setRenderer(new GenderRenderer());
+	gender.setRenderer(new TextRenderer<>(new GenderItemLabelGenerator()));
+	gender.setItemLabelGenerator(new GenderItemLabelGenerator());
+	gender.setAllowCustomValue(false);
+
 	groupComponent = new MultiSelectListBox<>();
 	ComponentRenderer<? extends Component, GroupDef> itemRenderer = new ComponentRenderer<>() {
 	    private static final long serialVersionUID = 1L;
