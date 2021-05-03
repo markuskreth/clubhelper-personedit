@@ -48,7 +48,11 @@ public class MainView extends VerticalLayout {
 
 	Button menuButton = new Button(VaadinIcon.MENU.create());
 	menuButton.addClickListener(this::onMenuButtonClick);
-	HorizontalLayout l = new HorizontalLayout(menuButton, new H1("Personen"));
+
+	Button addButton = new Button(VaadinIcon.PLUS_CIRCLE_O.create());
+	addButton.addClickListener(this::onAddButtonClick);
+
+	HorizontalLayout l = new HorizontalLayout(menuButton, new H1("Personen"), addButton);
 	l.setAlignItems(Alignment.CENTER);
 	add(l);
 
@@ -91,6 +95,11 @@ public class MainView extends VerticalLayout {
 	Long personId = event.getItem().getId();
 	event.getSource().getUI()
 		.ifPresent(ui -> ui.navigate(PersonEditor.class, personId));
+    }
+
+    public void onAddButtonClick(ClickEvent<Button> event) {
+	event.getSource().getUI()
+		.ifPresent(ui -> ui.navigate(PersonEditor.class, -1L));
     }
 
     public void onMenuButtonClick(ClickEvent<Button> event) {

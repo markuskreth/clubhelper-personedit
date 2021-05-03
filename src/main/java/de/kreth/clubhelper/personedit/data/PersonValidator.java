@@ -33,7 +33,7 @@ public class PersonValidator {
     }
 
     public ValidationResult validateNameElement(String text, ValueContext context) {
-	if (text != null && text.length() > 0) {
+	if (text != null && text.length() > 1) {
 	    return ValidationResult.ok();
 	} else {
 	    return ValidationResult.error("Bitte einen Namen eingeben.");

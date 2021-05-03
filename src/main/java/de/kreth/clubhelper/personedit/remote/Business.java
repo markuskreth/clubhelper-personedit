@@ -20,4 +20,6 @@ public interface Business {
 
     DetailedPerson store(DetailedPerson bean);
 
+    void delete(DetailedPerson bean);
+
 }

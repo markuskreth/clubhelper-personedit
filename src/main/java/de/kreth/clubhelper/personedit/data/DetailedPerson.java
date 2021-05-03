@@ -62,7 +62,10 @@ public class DetailedPerson {
     }
 
     public Gender getGenderObject() {
-	return Gender.valueOf(this.gender);
+	if (this.gender != null) {
+	    return Gender.valueOf(this.gender);
+	}
+	return null;
     }
 
     public Integer getGender() {
@@ -70,7 +73,11 @@ public class DetailedPerson {
     }
 
     public void setGender(Gender gender) {
-	this.gender = gender.getId();
+	if (gender == null) {
+	    this.gender = null;
+	} else {
+	    this.gender = gender.getId();
+	}
     }
 
     public void setGender(Integer gender) {
@@ -108,19 +115,27 @@ public class DetailedPerson {
 	person.birth = p.getBirth();
 	person.prename = p.getPrename();
 	person.surname = p.getSurname();
-	person.gender = p.getGender().getId();
+	if (p.getGender() != null) {
+	    person.gender = p.getGender().getId();
+	}
 	person.groups = new HashSet<>(p.getGroups());
 
 	return person;
     }
 
-    public Person toPerson() {
+    public Person toPerson(Person person) {
 	Person p = new Person();
 	p.setId(id);
+	if (person != null) {
+	    p = person;
+	}
 	p.setBirth(birth);
 	p.setPrename(prename);
 	p.setSurname(surname);
-	p.setGender(Gender.valueOf(gender));
+
+	if (gender != null) {
+	    p.setGender(Gender.valueOf(gender));
+	}
 
 	return p;
     }

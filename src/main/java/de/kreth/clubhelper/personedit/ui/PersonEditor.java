@@ -36,6 +36,7 @@ import com.vaadin.flow.router.Route;
 
 import de.kreth.clubhelper.data.Gender;
 import de.kreth.clubhelper.data.GroupDef;
+import de.kreth.clubhelper.data.Person;
 import de.kreth.clubhelper.data.Startpass;
 import de.kreth.clubhelper.personedit.data.DetailedPerson;
 import de.kreth.clubhelper.personedit.data.PersonValidator;
@@ -63,6 +64,8 @@ public class PersonEditor extends Div
 
     private Button reset;
 
+    private Button delete;
+
     private Text status;
 
     private DetailedPerson personDetails;
@@ -81,9 +84,9 @@ public class PersonEditor extends Div
 
     private void setupBinder() {
 	PersonValidator validator = new PersonValidator();
-	binder.forField(prename).withValidator(validator::validateNameElement)
+	binder.forField(prename).withValidator(validator::validateNameElement).asRequired()
 		.bind(DetailedPerson::getPrename, DetailedPerson::setPrename);
-	binder.forField(surname).withValidator(validator::validateNameElement)
+	binder.forField(surname).withValidator(validator::validateNameElement).asRequired()
 		.bind(DetailedPerson::getSurname, DetailedPerson::setSurname);
 	binder.forField(birthday).withValidator(validator::validateBirthday)
 		.bind(DetailedPerson::getBirth, DetailedPerson::setBirth);
@@ -102,7 +105,8 @@ public class PersonEditor extends Div
     }
 
     void binderStatusChange(StatusChangeEvent event) {
-	if (event.hasValidationErrors()) {
+
+	if (!binder.isValid()) {
 	    store.setEnabled(false);
 	    status.setText("Es gibt Fehler, Speichern nicht möglich.");
 	} else if (binder.hasChanges()) {
@@ -154,9 +158,10 @@ public class PersonEditor extends Div
 	groupComponent.add(groupError);
 	groupError.setText("Hier werden Fehler in Gruppen angezeigt.");
 
-	store = new Button("Speichern", this::onStoreClick);
+	store = new Button("Speichern", VaadinIcon.USER_CHECK.create(), this::onStoreClick);
 	store.setEnabled(false); // Keine Änderungen --> disabled.
 	reset = new Button("Zurücksetzen", this::onResetClick);
+	delete = new Button("Löschen", VaadinIcon.TRASH.create(), this::onDeleteClick);
 
 	layoutWithFormItems.addFormItem(prename, "Vorname");
 	layoutWithFormItems.addFormItem(surname, "Nachname");
@@ -167,7 +172,7 @@ public class PersonEditor extends Div
 
 	status = new Text("");
 
-	add(layoutWithFormItems, new HorizontalLayout(store, reset), status);
+	add(layoutWithFormItems, new HorizontalLayout(store, reset, delete), status);
     }
 
     private void openStartpassEditor() {
@@ -178,15 +183,40 @@ public class PersonEditor extends Div
 	startpassEditor.open();
     }
 
-    public void onResetClick(ClickEvent<Button> event) {
+    private void onResetClick(ClickEvent<Button> event) {
 	binder.readBean(personDetails);
     }
 
-    public void onStoreClick(ClickEvent<Button> event) {
+    private void onStoreClick(ClickEvent<Button> event) {
 
 	if (binder.hasChanges() && binder.writeBeanIfValid(personDetails)) {
-	    restService.store(binder.getBean());
+	    try {
+		restService.store(personDetails);
+	    } catch (Exception e) {
+		status.setText("Es ist ein Fehler aufgetreten: " + e);
+		store.setEnabled(true);
+	    }
 	}
+    }
+
+    private void onDeleteClick(ClickEvent<Button> event) {
+	new ConfirmDialog()
+		.withTitle("Löschen bestätigen")
+		.withMessage("Soll " + personName() + " wirklich gelöscht werden?")
+		.withRejectButton("Nein", ev -> {
+		})
+		.withConfirmButton("Ja", ev -> deletePerson(event))
+		.open();
+    }
+
+    private void deletePerson(ClickEvent<Button> event) {
+	restService.delete(personDetails);
+	event.getSource().getUI()
+		.ifPresent(ui -> ui.navigate(MainView.class));
+    }
+
+    private String personName() {
+	return prename.getValue() + " " + surname.getValue();
     }
 
     private Set<GroupDef> getGroups(DetailedPerson person) {
@@ -225,8 +255,16 @@ public class PersonEditor extends Div
 	if (personId != null) {
 	    this.groups.addAll(restService.getAllGroups());
 	    groupComponent.getDataProvider().refreshAll();
-	    personDetails = restService.getPersonDetails(personId);
+	    if (personId < 0) {
+		Person newPerson = new Person();
+		newPerson.getGroups().add(this.groups.get(0));
+		personDetails = DetailedPerson.createFor(newPerson);
+		delete.setEnabled(false);
+	    } else {
+		personDetails = restService.getPersonDetails(personId);
+	    }
 	    binder.readBean(personDetails);
+	    binder.validate();
 	}
 
     }

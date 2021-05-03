@@ -8,6 +8,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -41,9 +42,6 @@ public class BusinessImpl implements Business {
     public List<Person> getPersons() {
 	String url = apiUrl + "/person";
 	Person[] list = webClient.getForObject(url, Person[].class);
-	for (Person person : list) {
-	    cache.put(person.getId(), person);
-	}
 	return Arrays.asList(list);
     }
 
@@ -54,15 +52,7 @@ public class BusinessImpl implements Business {
 
     @Override
     public DetailedPerson getPersonDetails(Long personId) {
-	Person p;
-	if (cache.containsKey(personId)) {
-	    p = cache.get(personId);
-	} else {
-	    String url = apiUrl + "/person/" + personId;
-	    p = webClient.getForObject(url, Person.class);
-	}
-
-	DetailedPerson detailed = DetailedPerson.createFor(p);
+	DetailedPerson detailed = loadPersonById(personId);
 
 	String url = apiUrl + "/startpass/for/" + personId;
 	Startpass[] startpaesse = webClient.getForObject(url, Startpass[].class);
@@ -73,6 +63,15 @@ public class BusinessImpl implements Business {
 	Contact[] contacts = webClient.getForObject(url, Contact[].class);
 	detailed.setContacts(Arrays.asList(contacts));
 	return detailed;
+    }
+
+    private DetailedPerson loadPersonById(Long personId) {
+	Person p;
+	String url = apiUrl + "/person/" + personId;
+	p = webClient.getForObject(url, Person.class);
+	cache.put(p.getId(), p);
+
+	return DetailedPerson.createFor(p);
     }
 
     @Cacheable("groups")
@@ -90,7 +89,7 @@ public class BusinessImpl implements Business {
 	List<Contact> contacts = bean.getContacts();
 	for (int index = 0; index < contacts.size(); index++) {
 	    Contact contact = contacts.get(index);
-	    Contact c = store(bean, contact);
+	    Contact c = storeContact(bean, contact);
 	    result.getContacts().add(c);
 	}
 	return result;
@@ -100,18 +99,18 @@ public class BusinessImpl implements Business {
 	String url;
 	DetailedPerson result;
 	if (bean.getId() < 0) {
-	    Person p = bean.toPerson();
-	    url = apiUrl + "/person";
-	    result = DetailedPerson.createFor(webClient.postForObject(url, p, Person.class));
+	    HttpEntity<Person> entity = new HttpEntity<>(bean.toPerson(cache.get(bean.getId())));
+	    url = apiUrl + "/person/create";
+	    result = DetailedPerson.createFor(webClient.postForObject(url, entity, Person.class));
 	} else {
 	    url = apiUrl + "/person/" + bean.getId();
 	    webClient.put(url, bean);
-	    result = DetailedPerson.createFor(bean.toPerson());
+	    result = DetailedPerson.createFor(bean.toPerson(cache.get(bean.getId())));
 	}
 	return result;
     }
 
-    private Contact store(DetailedPerson bean, Contact contact) {
+    private Contact storeContact(DetailedPerson bean, Contact contact) {
 	String url;
 	Contact result;
 	if (contact.getId() < 0) {
@@ -123,6 +122,12 @@ public class BusinessImpl implements Business {
 	    result = contact;
 	}
 	return result;
+    }
+
+    @Override
+    public void delete(DetailedPerson bean) {
+	String url = apiUrl + "/person/" + bean.getId();
+	webClient.delete(url);
     }
 
 }
