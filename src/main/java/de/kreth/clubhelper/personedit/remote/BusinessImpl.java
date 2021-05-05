@@ -98,14 +98,15 @@ public class BusinessImpl implements Business {
     private DetailedPerson innerStore(DetailedPerson bean) {
 	String url;
 	DetailedPerson result;
+	Person origin = cache.get(bean.getId());
 	if (bean.getId() < 0) {
-	    HttpEntity<Person> entity = new HttpEntity<>(bean.toPerson(cache.get(bean.getId())));
+	    HttpEntity<Person> entity = new HttpEntity<>(bean.toPerson(origin));
 	    url = apiUrl + "/person/create";
 	    result = DetailedPerson.createFor(webClient.postForObject(url, entity, Person.class));
 	} else {
 	    url = apiUrl + "/person/" + bean.getId();
 	    webClient.put(url, bean);
-	    result = DetailedPerson.createFor(bean.toPerson(cache.get(bean.getId())));
+	    result = DetailedPerson.createFor(bean.toPerson(origin));
 	}
 	return result;
     }

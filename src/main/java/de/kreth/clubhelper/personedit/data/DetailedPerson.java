@@ -124,10 +124,12 @@ public class DetailedPerson {
     }
 
     public Person toPerson(Person person) {
-	Person p = new Person();
-	p.setId(id);
+	Person p;
 	if (person != null) {
 	    p = person;
+	} else {
+	    p = new Person();
+	    p.setId(id);
 	}
 	p.setBirth(birth);
 	p.setPrename(prename);
