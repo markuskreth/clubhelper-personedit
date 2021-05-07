@@ -82,7 +82,7 @@ public class BusinessImpl implements Business {
     }
 
     @Override
-    public DetailedPerson store(DetailedPerson bean) {
+    public DetailedPerson store(final DetailedPerson bean) {
 
 	DetailedPerson result = innerStore(bean);
 
@@ -95,7 +95,7 @@ public class BusinessImpl implements Business {
 	return result;
     }
 
-    private DetailedPerson innerStore(DetailedPerson bean) {
+    private DetailedPerson innerStore(final DetailedPerson bean) {
 	String url;
 	DetailedPerson result;
 	Person origin = cache.get(bean.getId());
@@ -111,7 +111,7 @@ public class BusinessImpl implements Business {
 	return result;
     }
 
-    private Contact storeContact(DetailedPerson bean, Contact contact) {
+    private Contact storeContact(final DetailedPerson bean, final Contact contact) {
 	String url;
 	Contact result;
 	if (contact.getId() < 0) {
@@ -126,7 +126,7 @@ public class BusinessImpl implements Business {
     }
 
     @Override
-    public void delete(DetailedPerson bean) {
+    public void delete(final DetailedPerson bean) {
 	String url = apiUrl + "/person/" + bean.getId();
 	webClient.delete(url);
     }
