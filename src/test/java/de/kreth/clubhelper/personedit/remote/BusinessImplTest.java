@@ -65,6 +65,7 @@ public class BusinessImplTest {
 	GroupDef g1 = new GroupDef();
 	g1.setId(1);
 	g1.setName("Group 1");
+	detail.getGroups().add(g1);
     }
 
     @Test
