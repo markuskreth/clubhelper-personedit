@@ -27,7 +27,7 @@ public class ControllerLoggerAspect extends AbstractLoggerAspect {
 
     @AfterThrowing(pointcut = "invocation()", throwing = "ex")
     public void logCall(JoinPoint joinPoint, Exception ex) throws Throwable {
-	log(ERROR, joinPoint);
+	log(ERROR, joinPoint, ex);
     }
 
     @AfterReturning(pointcut = "invocation()", returning = "result")
