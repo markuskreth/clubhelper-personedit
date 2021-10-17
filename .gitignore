@@ -34,3 +34,5 @@ build/
 
 ### VAADIN ###
 node_modules/
+
+*.launch
