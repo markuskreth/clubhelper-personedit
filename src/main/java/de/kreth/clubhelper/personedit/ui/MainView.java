@@ -31,103 +31,101 @@ import de.kreth.clubhelper.personedit.remote.Business;
 @PageTitle("Personenliste")
 public class MainView extends VerticalLayout {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    private final List<Person> personList;
+	private final List<Person> personList;
 
-    private final Business restService;
+	private final Business restService;
 
-    public MainView(@Autowired Business restService) {
-	this.restService = restService;
-	personList = new ArrayList<>();
-	createUi();
-	refreshData();
-    }
+	public MainView(@Autowired Business restService) {
+		this.restService = restService;
+		personList = new ArrayList<>();
+		createUi();
+		refreshData();
+	}
 
-    private void createUi() {
+	private void createUi() {
 
-	Button menuButton = new Button(VaadinIcon.MENU.create());
-	menuButton.addClickListener(this::onMenuButtonClick);
+		Button menuButton = new Button(VaadinIcon.MENU.create());
+		menuButton.addClickListener(this::onMenuButtonClick);
 
-	Button addButton = new Button(VaadinIcon.PLUS_CIRCLE_O.create());
-	addButton.addClickListener(this::onAddButtonClick);
+		Button addButton = new Button(VaadinIcon.PLUS_CIRCLE_O.create());
+		addButton.addClickListener(this::onAddButtonClick);
 
-	HorizontalLayout l = new HorizontalLayout(menuButton, new H1("Personen"), addButton);
-	l.setAlignItems(Alignment.CENTER);
-	add(l);
+		HorizontalLayout l = new HorizontalLayout(menuButton, new H1("Personen"), addButton);
+		l.setAlignItems(Alignment.CENTER);
+		add(l);
 
-	TextField filter = new TextField("Filter des Vor- oder Nachnamens");
-	filter.setPlaceholder("Filter nach Name...");
-	filter.setClearButtonVisible(true);
+		TextField filter = new TextField("Filter des Vor- oder Nachnamens");
+		filter.setPlaceholder("Filter nach Name...");
+		filter.setClearButtonVisible(true);
 
-	Grid<Person> grid = new Grid<>();
-	grid.addColumn(Person::getPrename).setHeader("Vorname");
-	grid.addColumn(Person::getSurname).setHeader("Nachname");
+		Grid<Person> grid = new Grid<>();
+		grid.addColumn(Person::getPrename).setHeader("Vorname");
+		grid.addColumn(Person::getSurname).setHeader("Nachname");
 
-	ConfigurableFilterDataProvider<Person, Void, SerializablePredicate<Person>> dataProvider = DataProvider
-		.ofCollection(this.personList).withConfigurableFilter();
-	grid.setDataProvider(dataProvider);
-	SerializablePredicate<Person> personFilter = new SerializablePredicate<>() {
+		ConfigurableFilterDataProvider<Person, Void, SerializablePredicate<Person>> dataProvider = DataProvider
+				.ofCollection(this.personList).withConfigurableFilter();
+		grid.setDataProvider(dataProvider);
+		SerializablePredicate<Person> personFilter = new SerializablePredicate<>() {
 
-	    private static final long serialVersionUID = 1L;
+			private static final long serialVersionUID = 1L;
 
-	    @Override
-	    public boolean test(Person t) {
+			@Override
+			public boolean test(Person t) {
 
-		if (filter.getValue() == null || filter.getValue().trim().isEmpty()) {
-		    return true;
-		}
+				if (filter.getValue() == null || filter.getValue().trim().isEmpty()) {
+					return true;
+				}
 
-		String filterText = filter.getValue().toLowerCase();
-		return t.getSurname().toLowerCase().contains(filterText)
-			|| t.getPrename().toLowerCase().contains(filterText);
-	    }
-	};
-	dataProvider.setFilter(personFilter);
-	filter.addValueChangeListener(p -> dataProvider.refreshAll());
+				String filterText = filter.getValue().toLowerCase();
+				return t.getSurname().toLowerCase().contains(filterText)
+						|| t.getPrename().toLowerCase().contains(filterText);
+			}
+		};
+		dataProvider.setFilter(personFilter);
+		filter.addValueChangeListener(p -> dataProvider.refreshAll());
 
-	grid.addItemClickListener(this::personClicked);
-	add(grid);
+		grid.addItemClickListener(this::personClicked);
+		add(grid);
 
-    }
+	}
 
-    void personClicked(ItemClickEvent<Person> event) {
-	Long personId = event.getItem().getId();
-	event.getSource().getUI()
-		.ifPresent(ui -> ui.navigate(PersonEditor.class, personId));
-    }
+	void personClicked(ItemClickEvent<Person> event) {
+		Long personId = event.getItem().getId();
+		event.getSource().getUI().ifPresent(ui -> ui.navigate(PersonEditor.class, personId));
+	}
 
-    public void onAddButtonClick(ClickEvent<Button> event) {
-	event.getSource().getUI()
-		.ifPresent(ui -> ui.navigate(PersonEditor.class, -1L));
-    }
+	public void onAddButtonClick(ClickEvent<Button> event) {
+		event.getSource().getUI().ifPresent(ui -> ui.navigate(PersonEditor.class, -1L));
+	}
 
-    public void onMenuButtonClick(ClickEvent<Button> event) {
-	ContextMenu menu = new ContextMenu();
-	menu.setTarget(event.getSource());
-	menu.addItem("Einstellungen", this::onSettingsButtonClick);
-	menu.addItem("Über", this::onAboutButtonClick);
-	menu.setVisible(true);
-    }
+	public void onMenuButtonClick(ClickEvent<Button> event) {
+		ContextMenu menu = new ContextMenu();
+		menu.setTarget(event.getSource());
+		menu.addItem("Einstellungen", this::onSettingsButtonClick);
+		menu.addItem("Über", this::onAboutButtonClick);
+		menu.setVisible(true);
+	}
 
-    public void onSettingsButtonClick(ClickEvent<MenuItem> event) {
-	Dialog dlg = new Dialog();
-	dlg.add(new H1("Einstellungen"));
-	dlg.add(new Text("Einstellugen für diese App. Noch nicht implementiert."));
-	dlg.open();
-    }
+	public void onSettingsButtonClick(ClickEvent<MenuItem> event) {
+		Dialog dlg = new Dialog();
+		dlg.add(new H1("Einstellungen"));
+		dlg.add(new Text("Einstellugen für diese App. Noch nicht implementiert."));
+		dlg.open();
+	}
 
-    public void onAboutButtonClick(ClickEvent<MenuItem> event) {
+	public void onAboutButtonClick(ClickEvent<MenuItem> event) {
 
-	Dialog dlg = new Dialog();
-	dlg.add(new H1("Personeneditor"));
-	dlg.add(new Text(
-		"Personeneditor ist eine App zur Erfassung und Änderung von Personen im Trampolin des MTV Groß-Buchholz."));
-	dlg.open();
-    }
+		Dialog dlg = new Dialog();
+		dlg.add(new H1("Personeneditor"));
+		dlg.add(new Text(
+				"Personeneditor ist eine App zur Erfassung und Änderung von Personen im Trampolin des MTV Groß-Buchholz."));
+		dlg.open();
+	}
 
-    private void refreshData() {
-	personList.addAll(restService.getPersons());
-    }
+	private void refreshData() {
+		personList.addAll(restService.getPersons());
+	}
 
 }
