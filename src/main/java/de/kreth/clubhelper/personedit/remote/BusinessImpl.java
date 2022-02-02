@@ -101,9 +101,8 @@ public class BusinessImpl implements Business {
 		Person origin = cache.get(bean.getId());
 		Person toStore = bean.toPerson(origin);
 		if (bean.getId() < 0) {
-			HttpEntity<Person> entity = new HttpEntity<>(toStore);
-			url = apiUrl + "/person/create";
-			Person postResult = webClient.postForObject(url, entity, Person.class);
+			url = apiUrl + "/person";
+			Person postResult = webClient.postForObject(url, toStore, Person.class);
 			result = DetailedPerson.createFor(postResult);
 		} else {
 			url = apiUrl + "/person/" + bean.getId();

@@ -1,11 +1,12 @@
 package de.kreth.clubhelper.personedit.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
 import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.HasValue.ValueChangeListener;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
@@ -18,28 +19,32 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
-import com.vaadin.flow.data.provider.DataProvider;
-import com.vaadin.flow.function.SerializablePredicate;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
 import de.kreth.clubhelper.data.Person;
 import de.kreth.clubhelper.personedit.remote.Business;
+import de.kreth.clubhelper.vaadincomponents.groupfilter.GroupFilter;
+import de.kreth.clubhelper.vaadincomponents.groupfilter.GroupFilterEvent;
+import de.kreth.clubhelper.vaadincomponents.groupfilter.GroupFilterListener;
 
 @Route
 @PageTitle("Personenliste")
-public class MainView extends VerticalLayout {
+public class MainView extends VerticalLayout
+		implements ValueChangeListener<ComponentValueChangeEvent<TextField, String>>, GroupFilterListener {
+
+	final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private static final long serialVersionUID = 1L;
 
-	private final List<Person> personList;
+	private final PersonUiList personList;
 
 	private final Business restService;
 
 	public MainView(@Autowired Business restService) {
 		this.restService = restService;
-		personList = new ArrayList<>();
+		personList = new PersonUiList();
 		createUi();
 		refreshData();
 	}
@@ -52,43 +57,41 @@ public class MainView extends VerticalLayout {
 		Button addButton = new Button(VaadinIcon.PLUS_CIRCLE_O.create());
 		addButton.addClickListener(this::onAddButtonClick);
 
+		GroupFilter groupFilter = new GroupFilter(restService.getAllGroups());
+		groupFilter.addListener(this);
+
 		HorizontalLayout l = new HorizontalLayout(menuButton, new H1("Personen"), addButton);
 		l.setAlignItems(Alignment.CENTER);
 		add(l);
-
+		add(groupFilter);
+		
 		TextField filter = new TextField("Filter des Vor- oder Nachnamens");
 		filter.setPlaceholder("Filter nach Name...");
 		filter.setClearButtonVisible(true);
-
+		filter.addValueChangeListener(this);
+		filter.setValueChangeMode(ValueChangeMode.TIMEOUT);
+		filter.setValueChangeTimeout(700);
+		
+		add(filter);
 		Grid<Person> grid = new Grid<>();
 		grid.addColumn(Person::getPrename).setHeader("Vorname");
 		grid.addColumn(Person::getSurname).setHeader("Nachname");
 
-		ConfigurableFilterDataProvider<Person, Void, SerializablePredicate<Person>> dataProvider = DataProvider
-				.ofCollection(this.personList).withConfigurableFilter();
-		grid.setDataProvider(dataProvider);
-		SerializablePredicate<Person> personFilter = new SerializablePredicate<>() {
+		grid.setDataProvider(personList.getDataProvider());
 
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public boolean test(Person t) {
-
-				if (filter.getValue() == null || filter.getValue().trim().isEmpty()) {
-					return true;
-				}
-
-				String filterText = filter.getValue().toLowerCase();
-				return t.getSurname().toLowerCase().contains(filterText)
-						|| t.getPrename().toLowerCase().contains(filterText);
-			}
-		};
-		dataProvider.setFilter(personFilter);
-		filter.addValueChangeListener(p -> dataProvider.refreshAll());
+		filter.addValueChangeListener(this::valueChanged);
 
 		grid.addItemClickListener(this::personClicked);
 		add(grid);
 
+	}
+
+	@Override
+	public void valueChanged(ComponentValueChangeEvent<TextField, String> event) {
+		StringBuilder logText = new StringBuilder();
+		logText.append("Filtering by Name: " + event.getValue());
+		logger.info(logText.toString());
+		personList.setFilterText(event.getValue());
 	}
 
 	void personClicked(ItemClickEvent<Person> event) {
@@ -125,7 +128,12 @@ public class MainView extends VerticalLayout {
 	}
 
 	private void refreshData() {
-		personList.addAll(restService.getPersons());
+		personList.setPersons(restService.getPersons());
+	}
+
+	@Override
+	public void groupFilterChange(GroupFilterEvent event) {
+		personList.setFilterGroups(event.getFilteredGroups());
 	}
 
 }
