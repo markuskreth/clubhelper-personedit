@@ -86,12 +86,12 @@ public class BusinessImpl implements Business {
 
 		DetailedPerson result = innerStore(bean);
 
-		List<Contact> contacts = bean.getContacts();
-		for (int index = 0; index < contacts.size(); index++) {
-			Contact contact = contacts.get(index);
-			Contact c = storeContact(bean, contact);
-			result.getContacts().add(c);
-		}
+//		List<Contact> contacts = bean.getContacts();
+//		for (int index = 0; index < contacts.size(); index++) {
+//			Contact contact = contacts.get(index);
+//			Contact c = storeContact(bean, contact);
+//			result.getContacts().add(c);
+//		}
 		return result;
 	}
 
