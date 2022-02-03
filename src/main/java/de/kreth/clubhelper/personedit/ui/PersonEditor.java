@@ -147,7 +147,7 @@ public class PersonEditor extends Div implements HasUrlParameter<Long>, BeforeLe
 		binder.forField(birthday).withValidator(validator::validateBirthday).bind(DetailedPerson::getBirth,
 				DetailedPerson::setBirth);
 
-		binder.forField(gender).bind(DetailedPerson::getGenderObject, DetailedPerson::setGender);
+		binder.forField(gender).bind(DetailedPerson::getGenderObject, DetailedPerson::setGenderObject);
 		binder.forField(startPass).withValidator(validator::validateStartpass).bind(this::getStartPassNr,
 				this::setStartpassNr);
 		binder.forField(groupComponent).withValidator(validator::validateGroup)

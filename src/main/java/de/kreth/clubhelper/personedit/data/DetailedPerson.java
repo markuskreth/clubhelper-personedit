@@ -67,17 +67,17 @@ public class DetailedPerson {
 		}
 		return null;
 	}
+	
+	public void setGenderObject(Gender gender) {
+		if (gender != null) {
+			this.setGender(gender.getId());
+		} else {
+			this.setGender((Integer)null);
+		}
+	}
 
 	public Integer getGender() {
 		return gender;
-	}
-
-	public void setGender(Gender gender) {
-		if (gender == null) {
-			this.gender = null;
-		} else {
-			this.gender = gender.getId();
-		}
 	}
 
 	public void setGender(Integer gender) {
