@@ -13,7 +13,7 @@
 
 	<groupId>de.kreth.clubhelper</groupId>
 	<artifactId>clubhelper-personedit</artifactId>
-	<version>0.1.0</version>
+	<version>0.1.1-SNAPSHOT</version>
 	<name>clubhelper-personedit</name>
 	<description>UI App for Clubhelper Personedition</description>
 
