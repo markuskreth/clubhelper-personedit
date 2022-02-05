@@ -13,7 +13,7 @@
 
 	<groupId>de.kreth.clubhelper</groupId>
 	<artifactId>clubhelper-personedit</artifactId>
-	<version>0.1.1-SNAPSHOT</version>
+	<version>0.1.0</version>
 	<name>clubhelper-personedit</name>
 	<description>UI App for Clubhelper Personedition</description>
 
@@ -91,6 +91,10 @@
 			<groupId>de.kreth.clubhelper</groupId>
 			<artifactId>vaadincomponents</artifactId>
 			<version>0.1.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
 		</dependency>
 	</dependencies>
 
