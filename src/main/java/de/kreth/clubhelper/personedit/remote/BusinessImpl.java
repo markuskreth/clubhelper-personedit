@@ -78,7 +78,8 @@ public class BusinessImpl implements Business {
 	@Override
 	public List<GroupDef> getAllGroups() {
 		String url = apiUrl + "/group";
-		return Arrays.asList(webClient.getForObject(url, GroupDef[].class));
+		GroupDef[] forObject = webClient.getForObject(url, GroupDef[].class);
+		return Arrays.asList(forObject);
 	}
 
 	@Override
