@@ -2,7 +2,7 @@ package de.kreth.clubhelper.personedit.ui;
 
 import com.vaadin.flow.component.ItemLabelGenerator;
 
-import de.kreth.clubhelper.data.Gender;
+import de.kreth.clubhelper.personedit.data.Gender;
 
 public class GenderItemLabelGenerator implements ItemLabelGenerator<Gender> {
 

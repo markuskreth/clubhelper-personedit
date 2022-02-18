@@ -51,7 +51,7 @@ public class UiSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
 		super.configure(http);
 		http.csrf().disable().anonymous().disable().authorizeRequests()
 				.requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
-//		.and().authorizeRequests()
+		.and().authorizeRequests()
 				.anyRequest().authenticated();
 
 	}

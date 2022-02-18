@@ -20,7 +20,6 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.web.client.RestTemplate;
 
 import de.kreth.clubhelper.data.Contact;
-import de.kreth.clubhelper.data.Gender;
 import de.kreth.clubhelper.data.GroupDef;
 import de.kreth.clubhelper.data.Person;
 import de.kreth.clubhelper.personedit.data.DetailedPerson;
@@ -45,7 +44,7 @@ public class BusinessImplTest {
 
 		person = new Person();
 		person.setId(1);
-		person.setGender(Gender.MALE.getId());
+		person.setGender(1);
 		person.setPrename("prename");
 		person.setSurname("surname");
 		person.setBirth(LocalDate.of(2000, 1, 1));

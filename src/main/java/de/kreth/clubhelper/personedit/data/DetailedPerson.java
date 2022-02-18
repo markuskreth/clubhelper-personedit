@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Set;
 
 import de.kreth.clubhelper.data.Contact;
-import de.kreth.clubhelper.data.Gender;
 import de.kreth.clubhelper.data.GroupDef;
 import de.kreth.clubhelper.data.Person;
 import de.kreth.clubhelper.data.Startpass;

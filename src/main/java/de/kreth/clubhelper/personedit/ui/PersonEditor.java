@@ -34,11 +34,11 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
-import de.kreth.clubhelper.data.Gender;
 import de.kreth.clubhelper.data.GroupDef;
 import de.kreth.clubhelper.data.Person;
 import de.kreth.clubhelper.data.Startpass;
 import de.kreth.clubhelper.personedit.data.DetailedPerson;
+import de.kreth.clubhelper.personedit.data.Gender;
 import de.kreth.clubhelper.personedit.data.PersonValidator;
 import de.kreth.clubhelper.personedit.remote.Business;
 
