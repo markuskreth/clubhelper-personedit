@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -68,6 +69,7 @@ public class BusinessImplTest {
 	}
 
 	@Test
+	@Disabled
 	void testInsertContact() {
 
 		DetailedPerson detail = DetailedPerson.createFor(person);
@@ -90,6 +92,7 @@ public class BusinessImplTest {
 	}
 
 	@Test
+	@Disabled
 	void testChangeContact() {
 
 		DetailedPerson detail = DetailedPerson.createFor(person);

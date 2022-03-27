@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -36,11 +35,10 @@ public class UiSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
 	@Bean
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 	public KeycloakRestTemplate restTemplate() {
-		KeycloakRestTemplate keycloakRestTemplate = new KeycloakRestTemplate(factory);
-		keycloakRestTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
-		return keycloakRestTemplate;
+		return new KeycloakRestTemplate(factory);
 	}
 
+	@Bean
 	@Override
 	protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
 		return new RegisterSessionAuthenticationStrategy(new SessionRegistryImpl());
@@ -49,10 +47,11 @@ public class UiSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
 	@Override
 	public void configure(HttpSecurity http) throws Exception {
 		super.configure(http);
-		http.csrf().disable().anonymous().disable().authorizeRequests()
-				.requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
-		.and().authorizeRequests()
-				.anyRequest().authenticated();
+		http
+			.csrf().disable()
+			.anonymous().disable()
+			.authorizeRequests().requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
+			.anyRequest().hasAnyRole("ROLE_trainer", "ROLE_admin");
 
 	}
 
