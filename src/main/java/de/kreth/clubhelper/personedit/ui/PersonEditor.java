@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vaadin.flow.component.ClickEvent;
@@ -46,6 +48,7 @@ import de.kreth.clubhelper.personedit.remote.Business;
 @PageTitle("Personeneditor")
 public class PersonEditor extends Div implements HasUrlParameter<Long>, BeforeLeaveObserver {
 
+	final Logger logger = LoggerFactory.getLogger(getClass());
 	private static final long serialVersionUID = 1L;
 
 	private final Business restService;
@@ -194,7 +197,9 @@ public class PersonEditor extends Div implements HasUrlParameter<Long>, BeforeLe
 					binder.removeBean();
 					event.getSource().getUI().ifPresent(ui -> ui.navigate(PersonEditor.class, result.getId()));
 				}
+				logger.info("Stored {}", personDetails);
 			} catch (Exception e) {
+				logger.error("Fehler beim Speichern von " + personDetails, e);
 				status.setText("Es ist ein Fehler aufgetreten: " + e);
 				store.setEnabled(true);
 			}
@@ -264,6 +269,7 @@ public class PersonEditor extends Div implements HasUrlParameter<Long>, BeforeLe
 				delete.setEnabled(false);
 			} else {
 				personDetails = restService.getPersonDetails(personId);
+				logger.info("Opening {} for {}", getClass().getSimpleName(), personDetails);
 			}
 			binder.readBean(personDetails);
 			binder.validate();
@@ -275,6 +281,7 @@ public class PersonEditor extends Div implements HasUrlParameter<Long>, BeforeLe
 	public void beforeLeave(BeforeLeaveEvent event) {
 
 		if (binder.hasChanges()) {
+			logger.debug("Unstored Changes found.");
 			final ContinueNavigationAction postpone = event.postpone();
 			new ConfirmDialog().withTitle("Änderungen werden verworfen!")
 					.withMessage("Es gibt ungespeicherte Änderungen. Wenn Sie fortfahren, werden diese verloren gehen.")
