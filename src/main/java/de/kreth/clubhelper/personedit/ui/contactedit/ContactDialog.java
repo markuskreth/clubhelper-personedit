@@ -11,7 +11,7 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.textfield.TextField;
 
 import de.kreth.clubhelper.data.Contact;
-import de.kreth.clubhelper.data.Contact.Type;
+import de.kreth.clubhelper.data.ContactType;
 import de.kreth.clubhelper.personedit.ui.components.StoreConfimeListener;
 import de.kreth.clubhelper.personedit.ui.components.StoreConfirmedEvent;
 
@@ -20,7 +20,7 @@ public class ContactDialog {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private Dialog dlg;
     private final Contact contact;
-    private final ComboBox<Contact.Type> type = new ComboBox<>("Art", Contact.Type.values());
+    private final ComboBox<ContactType> type = new ComboBox<>("Art", ContactType.values());
     private final TextField value = new TextField();
 
     private Button storeButton;
@@ -36,8 +36,8 @@ public class ContactDialog {
 	this.contact = contact;
 	this.storeListener = storeListener;
 	this.discardListener = discardListener;
-	type.setItemLabelGenerator(Type::getName);
-	type.setValue(Contact.Type.valueByName(contact.getType()));
+	type.setItemLabelGenerator(ContactType::getName);
+	type.setValue(ContactType.valueByName(contact.getType()));
 	value.setValue(contact.getValue());
     }
 

@@ -23,6 +23,7 @@ import org.springframework.web.client.RestTemplate;
 import de.kreth.clubhelper.data.Contact;
 import de.kreth.clubhelper.data.GroupDef;
 import de.kreth.clubhelper.data.Person;
+import de.kreth.clubhelper.data.ContactType;
 import de.kreth.clubhelper.personedit.data.DetailedPerson;
 
 public class BusinessImplTest {
@@ -74,7 +75,7 @@ public class BusinessImplTest {
 
 		DetailedPerson detail = DetailedPerson.createFor(person);
 		Contact newContact = new Contact();
-		newContact.setType(Contact.Type.MOBILE.getName());
+		newContact.setType(ContactType.MOBILE.getName());
 		newContact.setValue("0155555555");
 		detail.getContacts().add(newContact);
 		when(restMock.postForObject(anyString(), any(), eq(Contact.class))).thenAnswer(i -> i.getArgument(1));
@@ -98,7 +99,7 @@ public class BusinessImplTest {
 		DetailedPerson detail = DetailedPerson.createFor(person);
 		Contact newContact = new Contact();
 		newContact.setId(1);
-		newContact.setType(Contact.Type.MOBILE.getName());
+		newContact.setType(ContactType.MOBILE.getName());
 		newContact.setValue("0155555555");
 		detail.getContacts().add(newContact);
 

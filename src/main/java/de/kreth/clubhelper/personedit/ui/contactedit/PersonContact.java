@@ -17,7 +17,7 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.Renderer;
 
 import de.kreth.clubhelper.data.Contact;
-import de.kreth.clubhelper.data.Contact.Type;
+import de.kreth.clubhelper.data.ContactType;
 import de.kreth.clubhelper.personedit.data.DetailedPerson;
 import de.kreth.clubhelper.personedit.remote.Business;
 import de.kreth.clubhelper.personedit.ui.components.StoreConfimeListener;
@@ -123,9 +123,9 @@ public class PersonContact extends Div {
 
 	public void setContact(final Contact c) {
 	    this.c = c;
-	    Type type = Type.valueByName(c.getType());
+	    ContactType type = ContactType.valueByName(c.getType());
 
-	    if (type == Type.EMAIL) {
+	    if (type == ContactType.EMAIL) {
 		Button doContact = new Button(VaadinIcon.OUTBOX.create());
 		doContact.addClickListener(this::sendMail);
 		add(doContact);
