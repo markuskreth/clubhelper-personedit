@@ -22,114 +22,119 @@ import de.kreth.clubhelper.personedit.data.DetailedPerson;
 @Service
 public class BusinessImpl implements Business {
 
-	private final RestTemplate webClient;
+    private final RestTemplate webClient;
 
-	@Value("${resourceserver.api.url}")
-	private String apiUrl;
+    @Value("${resourceserver.api.url}")
+    private String apiUrl;
 
-	private final Map<Long, Person> cache = new HashMap<>();
+    private final Map<Long, Person> cache = new HashMap<>();
 
-	public BusinessImpl(@Autowired RestTemplate webClient) {
-		this.webClient = webClient;
+    public BusinessImpl(@Autowired RestTemplate webClient) {
+	this.webClient = webClient;
+    }
+
+    public void setApiUrl(String apiUrl) {
+	this.apiUrl = apiUrl;
+    }
+
+    @Override
+    public List<Person> getPersons() {
+	String url = apiUrl + "/person";
+	Person[] list = webClient.getForObject(url, Person[].class);
+	return Arrays.asList(list);
+    }
+
+    @Override
+    public Authentication getCurrent() {
+	return SecurityContextHolder.getContext().getAuthentication();
+    }
+
+    @Override
+    public DetailedPerson getPersonDetails(Long personId) {
+	DetailedPerson detailed = loadPersonById(personId);
+
+	String url = apiUrl + "/startpass/for/" + personId;
+	Startpass[] startpaesse = webClient.getForObject(url, Startpass[].class);
+	if (startpaesse != null && startpaesse.length > 0) {
+	    detailed.setStartpass(startpaesse[0]);
 	}
+	url = apiUrl + "/contact/for/" + personId;
+	Contact[] contacts = webClient.getForObject(url, Contact[].class);
+	detailed.setContacts(Arrays.asList(contacts));
+	return detailed;
+    }
 
-	public void setApiUrl(String apiUrl) {
-		this.apiUrl = apiUrl;
+    private DetailedPerson loadPersonById(Long personId) {
+	Person p;
+	String url = apiUrl + "/person/" + personId;
+	p = webClient.getForObject(url, Person.class);
+	cache.put(p.getId(), p);
+
+	return DetailedPerson.createFor(p);
+    }
+
+    @Cacheable("groups")
+    @Override
+    public List<GroupDef> getAllGroups() {
+	String url = apiUrl + "/group";
+	GroupDef[] forObject = webClient.getForObject(url, GroupDef[].class);
+	return Arrays.asList(forObject);
+    }
+
+    @Override
+    public DetailedPerson store(DetailedPerson bean, Contact contact) {
+
+	List<Contact> contacts = bean.getContacts();
+	int index = contacts.indexOf(contact);
+	contacts.remove(index);
+	Contact c = storeContact(bean, contact);
+	contacts.add(index, c);
+	return bean;
+    }
+
+    @Override
+    public DetailedPerson store(final DetailedPerson bean) {
+	String url;
+	DetailedPerson result;
+	Person origin = cache.get(bean.getId());
+	Person toStore = bean.toPerson(origin);
+
+	url = apiUrl + "/person/" + bean.getId();
+
+	if (bean.getId() < 0) {
+	    Person postResult = webClient.postForObject(url, toStore, Person.class);
+	    result = DetailedPerson.createFor(postResult);
+	} else {
+	    webClient.put(url, toStore);
+	    result = DetailedPerson.createFor(toStore);
 	}
+	return result;
+    }
 
-	@Override
-	public List<Person> getPersons() {
-		String url = apiUrl + "/person";
-		Person[] list = webClient.getForObject(url, Person[].class);
-		return Arrays.asList(list);
+    private Contact storeContact(final DetailedPerson bean, final Contact contact) {
+
+	String url;
+	Contact result;
+	if (contact.getId() < 0) {
+	    url = apiUrl + "/contact";
+	    result = webClient.postForObject(url, contact, Contact.class);
+	} else {
+	    url = apiUrl + "/contact/for/" + bean.getId();
+	    webClient.put(url, contact);
+	    result = contact;
 	}
+	return result;
+    }
 
-	@Override
-	public Authentication getCurrent() {
-		return SecurityContextHolder.getContext().getAuthentication();
-	}
+    @Override
+    public void delete(final DetailedPerson bean) {
+	String url = apiUrl + "/person/" + bean.getId();
+	webClient.delete(url);
+    }
 
-	@Override
-	public DetailedPerson getPersonDetails(Long personId) {
-		DetailedPerson detailed = loadPersonById(personId);
-
-		String url = apiUrl + "/startpass/for/" + personId;
-		Startpass[] startpaesse = webClient.getForObject(url, Startpass[].class);
-		if (startpaesse != null && startpaesse.length > 0) {
-			detailed.setStartpass(startpaesse[0]);
-		}
-		url = apiUrl + "/contact/for/" + personId;
-		Contact[] contacts = webClient.getForObject(url, Contact[].class);
-		detailed.setContacts(Arrays.asList(contacts));
-		return detailed;
-	}
-
-	private DetailedPerson loadPersonById(Long personId) {
-		Person p;
-		String url = apiUrl + "/person/" + personId;
-		p = webClient.getForObject(url, Person.class);
-		cache.put(p.getId(), p);
-
-		return DetailedPerson.createFor(p);
-	}
-
-	@Cacheable("groups")
-	@Override
-	public List<GroupDef> getAllGroups() {
-		String url = apiUrl + "/group";
-		GroupDef[] forObject = webClient.getForObject(url, GroupDef[].class);
-		return Arrays.asList(forObject);
-	}
-
-	@Override
-	public DetailedPerson store(final DetailedPerson bean) {
-
-		DetailedPerson result = innerStore(bean);
-
-//		List<Contact> contacts = bean.getContacts();
-//		for (int index = 0; index < contacts.size(); index++) {
-//			Contact contact = contacts.get(index);
-//			Contact c = storeContact(bean, contact);
-//			result.getContacts().add(c);
-//		}
-		return result;
-	}
-
-	private DetailedPerson innerStore(final DetailedPerson bean) {
-		String url;
-		DetailedPerson result;
-		Person origin = cache.get(bean.getId());
-		Person toStore = bean.toPerson(origin);
-		if (bean.getId() < 0) {
-			url = apiUrl + "/person";
-			Person postResult = webClient.postForObject(url, toStore, Person.class);
-			result = DetailedPerson.createFor(postResult);
-		} else {
-			url = apiUrl + "/person/" + bean.getId();
-			webClient.put(url, toStore);
-			result = DetailedPerson.createFor(toStore);
-		}
-		return result;
-	}
-
-	private Contact storeContact(final DetailedPerson bean, final Contact contact) {
-		String url;
-		Contact result;
-		if (contact.getId() < 0) {
-			url = apiUrl + "/contact";
-			result = webClient.postForObject(url, contact, Contact.class);
-		} else {
-			url = apiUrl + "/contact/for/" + bean.getId();
-			webClient.put(url, contact);
-			result = contact;
-		}
-		return result;
-	}
-
-	@Override
-	public void delete(final DetailedPerson bean) {
-		String url = apiUrl + "/person/" + bean.getId();
-		webClient.delete(url);
-	}
-
+    @Override
+    public void delete(DetailedPerson personDetails, Contact contact) {
+	String url = apiUrl + "/contact/" + contact.getId();
+	webClient.delete(url);
+    }
 }
