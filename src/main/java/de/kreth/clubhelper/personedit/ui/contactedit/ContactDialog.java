@@ -37,7 +37,7 @@ public class ContactDialog {
 	this.storeListener = storeListener;
 	this.discardListener = discardListener;
 	type.setItemLabelGenerator(ContactType::getName);
-	type.setValue(ContactType.valueByName(contact.getType()));
+	type.setValue(contact.getType());
 	value.setValue(contact.getValue());
     }
 
@@ -58,7 +58,7 @@ public class ContactDialog {
     }
 
     void storeChanges(ClickEvent<Button> ev) {
-	contact.setType(type.getValue().getName());
+	contact.setType(type.getValue());
 	contact.setValue(value.getValue());
 	dlg.close();
 	dlg = null;

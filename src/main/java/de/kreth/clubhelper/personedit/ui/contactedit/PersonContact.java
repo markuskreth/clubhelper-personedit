@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
@@ -15,6 +16,7 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.Renderer;
+import com.vaadin.flow.data.renderer.TextRenderer;
 
 import de.kreth.clubhelper.data.Contact;
 import de.kreth.clubhelper.data.ContactType;
@@ -37,8 +39,19 @@ public class PersonContact extends Div {
     public PersonContact(Business restService) {
 	this.restService = restService;
 	this.contactGrid = new Grid<>();
+	ItemLabelGenerator<Contact> generator = new ItemLabelGenerator<>() {
 
-	contactGrid.addColumn(Contact::getType).setHeader("Kontakt");
+	    private static final long serialVersionUID = -7986686553393868535L;
+
+	    @Override
+	    public String apply(Contact item) {
+		if (item != null && item.getType() != null) {
+		    return item.getType().getName();
+		}
+		return null;
+	    }
+	};
+	contactGrid.addColumn(new TextRenderer<Contact>(generator)).setHeader("Kontakt");
 	contactGrid.addColumn(Contact::getValue).setHeader("Wert");
 
 	this.dataList = new ArrayList<>();
@@ -123,7 +136,7 @@ public class PersonContact extends Div {
 
 	public void setContact(final Contact c) {
 	    this.c = c;
-	    ContactType type = ContactType.valueByName(c.getType());
+	    ContactType type = c.getType();
 
 	    if (type == ContactType.EMAIL) {
 		Button doContact = new Button(VaadinIcon.OUTBOX.create());
