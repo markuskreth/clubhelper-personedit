@@ -124,6 +124,8 @@ public class PersonContact extends Div {
 	@Override
 	public void storeConfirmed(StoreConfirmedEvent<Contact> ev) {
 	    restService.store(personDetails, ev.getStoredItem());
+	    dataList.clear();
+	    dataList.addAll(personDetails.getContacts());
 	    dataProvider.refreshAll();
 	}
 

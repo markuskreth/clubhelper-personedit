@@ -9,11 +9,13 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
 
 import de.kreth.clubhelper.data.Contact;
 import de.kreth.clubhelper.data.ContactType;
 import de.kreth.clubhelper.personedit.ui.components.StoreConfimeListener;
 import de.kreth.clubhelper.personedit.ui.components.StoreConfirmedEvent;
+import de.kreth.clubhelper.vaadincomponents.validators.ContactValueValidator;
 
 public class ContactDialog {
 
@@ -23,9 +25,10 @@ public class ContactDialog {
     private final ComboBox<ContactType> type = new ComboBox<>("Art", ContactType.values());
     private final TextField value = new TextField();
 
-    private Button storeButton;
+    private final Button storeButton;
     private final StoreConfimeListener<Contact> storeListener;
     private final Runnable discardListener;
+    private Binder<Contact> binder;
 
     public ContactDialog(Contact contact, StoreConfimeListener<Contact> storeListener) {
 	this(contact, storeListener, null);
@@ -35,10 +38,20 @@ public class ContactDialog {
 	super();
 	this.contact = contact;
 	this.storeListener = storeListener;
+	storeButton = new Button("Speichern", this::storeChanges);
 	this.discardListener = discardListener;
 	type.setItemLabelGenerator(ContactType::getName);
-	type.setValue(contact.getType());
-	value.setValue(contact.getValue());
+	this.binder = new Binder<Contact>();
+	this.binder.forField(value)
+		.withValidator(new ContactValueValidator(type)).bind(Contact::getValue,
+			Contact::setValue);
+	this.binder.forField(type).asRequired("Ein Kontakttyp muss gesetzt sein.").bind(Contact::getType,
+		Contact::setType);
+
+	binder.addValueChangeListener(ev -> storeButton.setEnabled(binder.validate().isOk()));
+	binder.addStatusChangeListener(event -> storeButton.setEnabled(!event.hasValidationErrors()));
+	binder.setBean(contact);
+
     }
 
     public void showDialog() {
@@ -46,7 +59,6 @@ public class ContactDialog {
 	    dlg = new Dialog();
 
 	    dlg.add(new FormLayout(type, value));
-	    storeButton = new Button("Speichern", this::storeChanges);
 	    Button discartButton = new Button("Verwerfen", this::discartChanges);
 
 	    dlg.add(new FormLayout(storeButton, discartButton));
@@ -58,11 +70,12 @@ public class ContactDialog {
     }
 
     void storeChanges(ClickEvent<Button> ev) {
-	contact.setType(type.getValue());
-	contact.setValue(value.getValue());
-	dlg.close();
-	dlg = null;
-	storeListener.storeConfirmed(new StoreConfirmedEvent<Contact>(contact));
+
+	if (binder.validate().isOk()) {
+	    dlg.close();
+	    dlg = null;
+	    storeListener.storeConfirmed(new StoreConfirmedEvent<Contact>(contact));
+	}
     }
 
     void discartChanges(ClickEvent<Button> ev) {

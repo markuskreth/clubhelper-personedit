@@ -86,8 +86,8 @@ public class BusinessImpl implements Business {
 
 	List<Contact> contacts = bean.getContacts();
 	int index = contacts.indexOf(contact);
-	contacts.remove(index);
 	Contact c = storeContact(bean, contact);
+	contacts.remove(index);
 	contacts.add(index, c);
 	return bean;
     }
@@ -121,7 +121,7 @@ public class BusinessImpl implements Business {
 	} else {
 	    url = apiUrl + "/contact/for/" + bean.getId();
 	    webClient.put(url, contact);
-	    result = contact;
+	    result = webClient.getForObject(apiUrl + "/contact/" + contact.getId(), Contact.class);
 	}
 	return result;
     }
