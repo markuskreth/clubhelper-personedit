@@ -51,6 +51,7 @@ public class PersonContact extends Div {
 		return null;
 	    }
 	};
+
 	contactGrid.addColumn(new TextRenderer<Contact>(generator)).setHeader("Kontakt");
 	contactGrid.addColumn(Contact::getValue).setHeader("Wert");
 

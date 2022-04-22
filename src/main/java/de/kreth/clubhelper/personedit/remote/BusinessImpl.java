@@ -13,9 +13,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import de.kreth.clubhelper.data.BaseEntity;
 import de.kreth.clubhelper.data.Contact;
 import de.kreth.clubhelper.data.GroupDef;
 import de.kreth.clubhelper.data.Person;
+import de.kreth.clubhelper.data.PersonNote;
 import de.kreth.clubhelper.data.Startpass;
 import de.kreth.clubhelper.personedit.data.DetailedPerson;
 
@@ -82,17 +84,6 @@ public class BusinessImpl implements Business {
     }
 
     @Override
-    public DetailedPerson store(DetailedPerson bean, Contact contact) {
-
-	List<Contact> contacts = bean.getContacts();
-	int index = contacts.indexOf(contact);
-	Contact c = storeContact(bean, contact);
-	contacts.remove(index);
-	contacts.add(index, c);
-	return bean;
-    }
-
-    @Override
     public DetailedPerson store(final DetailedPerson bean) {
 	String url;
 	DetailedPerson result;
@@ -111,19 +102,15 @@ public class BusinessImpl implements Business {
 	return result;
     }
 
-    private Contact storeContact(final DetailedPerson bean, final Contact contact) {
+    @Override
+    public DetailedPerson store(DetailedPerson bean, Contact contact) {
 
-	String url;
-	Contact result;
-	if (contact.getId() < 0) {
-	    url = apiUrl + "/contact";
-	    result = webClient.postForObject(url, contact, Contact.class);
-	} else {
-	    url = apiUrl + "/contact/for/" + bean.getId();
-	    webClient.put(url, contact);
-	    result = webClient.getForObject(apiUrl + "/contact/" + contact.getId(), Contact.class);
-	}
-	return result;
+	List<Contact> contacts = bean.getContacts();
+	int index = contacts.indexOf(contact);
+	Contact c = store(bean, contact, Contact.class);
+	contacts.remove(index);
+	contacts.add(index, c);
+	return bean;
     }
 
     @Override
@@ -136,5 +123,30 @@ public class BusinessImpl implements Business {
     public void delete(DetailedPerson personDetails, Contact contact) {
 	String url = apiUrl + "/contact/" + contact.getId();
 	webClient.delete(url);
+    }
+
+    @Override
+    public List<PersonNote> getPersonNotes(Long personId) {
+	String url = apiUrl + "/personnote/for/" + personId;
+	PersonNote[] forObject = webClient.getForObject(url, PersonNote[].class);
+	return Arrays.asList(forObject);
+    }
+
+    @Override
+    public <T extends BaseEntity> T store(DetailedPerson bean, T obj, Class<T> storeClass) {
+
+	T result;
+	String path = storeClass.getSimpleName().toLowerCase();
+	String url = apiUrl + "/" + path
+		+ "/for/" + bean.getId();
+
+	if (obj.getId() < 0) {
+	    result = webClient.postForObject(url, obj, storeClass);
+	} else {
+	    webClient.put(url, obj);
+	    result = webClient.getForObject(apiUrl + "/" + path
+		    + "/" + obj.getId(), storeClass);
+	}
+	return result;
     }
 }
