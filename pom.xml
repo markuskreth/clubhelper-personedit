@@ -264,4 +264,10 @@
 		</profile>
 
 	</profiles>
+	
+	<scm>
+		<url>scm:git:https://github.com/markuskreth/clubhelper-personedit.git</url>
+		<developerConnection>scm:git:https://github.com/markuskreth/clubhelper-personedit.git</developerConnection>
+		<connection>scm:git:https://github.com/markuskreth/clubhelper-personedit.git</connection>
+	</scm>
 </project>
