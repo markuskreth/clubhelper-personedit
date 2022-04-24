@@ -97,6 +97,7 @@ public class PersonEditor extends Div implements HasUrlParameter<Long>, BeforeLe
 	accordion.addOpenedChangeListener(new AccordionChangeListener());
 	accordion.open(0);
 	buttonLayout = new HorizontalLayout(store, reset, delete);
+
 	add(layoutWithFormItems, accordion, buttonLayout, status);
 
     }
